@@ -150,7 +150,8 @@ def load_model_and_test(model,lista):
     print(result)
 
 if __name__ == '__main__':
-    #df_data, df_target = load_and_treat_data()
-    #generate_model(df_data, df_target)
-    lista = rpa.rpa_get_values_cotation(False)
+    rpa.download_historical_data('eurusd')
+    df_data, df_target = load_and_treat_data()
+    generate_model(df_data, df_target)
+    lista = rpa.rpa_get_values_cotation(False,'EUR/USD')
     load_model_and_test('PassiveAggressiveRegressor', lista)

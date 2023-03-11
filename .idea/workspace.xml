@@ -32,7 +32,7 @@
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
 }]]></component>
-  <component name="RunManager" selected="Python.rpa">
+  <component name="RunManager" selected="Python.analise_dados">
     <configuration name="analise_dados" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="RPA-bot-trader" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -77,8 +77,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.rpa" />
         <item itemvalue="Python.analise_dados" />
+        <item itemvalue="Python.rpa" />
       </list>
     </recent_temporary>
   </component>
