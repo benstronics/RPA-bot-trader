@@ -51,6 +51,10 @@ def load_and_treat_data():
     return df_data, df_target
 
 def generate_model(df_data, df_target):
+    try:
+        os.mkdir('models')
+    except Exception as e:
+        logging.exception(e)
 
     # Split the data into training and testing sets
     X_train, X_test, y_train, y_test = train_test_split(df_data, df_target, test_size=0.2,
@@ -74,7 +78,7 @@ def generate_model(df_data, df_target):
     print(y_test)
     print(y_pred)
     # save the trained model
-    filename = 'PassiveAggressiveRegressor.sav'
+    filename = 'models/PassiveAggressiveRegressor.sav'
     pickle.dump(model1, open(filename, 'wb'))
 
     # compute the mean squared error
@@ -96,7 +100,7 @@ def generate_model(df_data, df_target):
     print(y_test)
     print(y_pred)
     # save the trained model
-    filename = 'Ridge.sav'
+    filename = 'models/Ridge.sav'
     pickle.dump(model2, open(filename, 'wb'))
 
     # compute the mean squared error
@@ -118,7 +122,7 @@ def generate_model(df_data, df_target):
     print(y_test)
     print(y_pred)
     # save the trained model
-    filename = 'LinearRegression.sav'
+    filename = 'models/LinearRegression.sav'
     pickle.dump(model3, open(filename, 'wb'))
 
     # compute the mean squared error
@@ -141,17 +145,34 @@ def load_model_and_test(model,lista):
     df_test.loc[0, 'open'] = lista[0]
     df_test.loc[0, 'high'] = lista[1]
     df_test.loc[0, 'low'] = lista[2]
+    open_f = lista[0]
+    close = lista[3]
     print('df_test')
     print(df_test)
 
     # load the saved model
-    loaded_model = pickle.load(open(f'{model}.sav', 'rb'))
-    result = loaded_model.predict(df_test)
-    print(result)
+    with open(f'models/{model}.sav', 'rb') as file:
+        # Load the contents of the file into a variable
+        #file = f.read()
+        loaded_model = pickle.load(file)
+        result = loaded_model.predict(df_test)
+        print(result)
+    return result,open_f,close
 
+def decide_order_buy_sell(predicted,open,close_now):
+    if float(predicted)<float(open) and float(predicted)<float(close_now):
+        sell = True
+        buy = False
+    elif float(predicted)>float(open) and float(predicted)>float(close_now):
+        buy = True
+        sell = False
+    else:
+        sell = False
+        buy = False
+    return sell, buy
 if __name__ == '__main__':
-    rpa.download_historical_data('eurusd')
-    df_data, df_target = load_and_treat_data()
-    generate_model(df_data, df_target)
+    # rpa.download_historical_data('eurusd',5)
+    # df_data, df_target = load_and_treat_data()
+    # generate_model(df_data, df_target)
     lista = rpa.rpa_get_values_cotation(False,'EUR/USD')
     load_model_and_test('PassiveAggressiveRegressor', lista)

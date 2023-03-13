@@ -456,12 +456,14 @@ class Interface(customtkinter.CTk):
             if len(self.list_functions_button) == self.qtde_button:
                 function = self.list_functions_button[row]
             else:
-                def function(pos):
+                def function():
+                    global row
+                    pos = row +1
                     print(f'Botão {pos} sem função atribuida!')
             image = copy.copy(self.image_icon_image)
             self.home_frame_button[row] = customtkinter.CTkButton(self.home_frame, text=text,corner_radius=10, height=40, border_spacing=10,
                                                                   image=image,
-                                                                  command=partial(function, row + 1),font=customtkinter.CTkFont(size=15))
+                                                                  command=function,font=customtkinter.CTkFont(size=15))
             self.home_frame_button[row].grid(row=(row + 2), column=0, padx=20, pady=10, sticky="nsew",)
         #self.home_frame.grid_rowconfigure(10, weight=1)
     def warning(self,msg:str='',len_break_line=15,master:object=None):
@@ -878,6 +880,7 @@ class Interface(customtkinter.CTk):
             def options(radio:object, master: object = None, window: object = None):
                 valor = radio.get()
                 print(f'Valor selecionado: {valor}')
+                list_optional_function[int(valor)-1]()
                 self.on_closing_top(window, window)
 
             image = copy.copy(self.options_image)
@@ -932,11 +935,14 @@ class Interface(customtkinter.CTk):
             #self.ask_table_dimentions(master=self)]
     def select_parameters(self,list_options:list=[],text:str='Opções',list_optional_check_box_functions:list=[],orient:str='vertical',offset_row:int=1,offset_column:int=0, optional_button_function:object=None):
         try:
+            parameter=''
             check_box = ['' for _ in list_options]
 
             def options(check:object, master: object = None, window: object = None):
+                global parameter
                 valor = check_box[check].get()
                 print(f'Valor selecionado: {valor}')
+                parameter=valor
                 self.on_closing_top(window, window)
 
             image = copy.copy(self.options_image)
@@ -987,6 +993,7 @@ class Interface(customtkinter.CTk):
                                                         command=partial(self.save_entry_data,check_box,None,None,optional_button_function),
                                                         width=200)
             button.grid(row=offset_row + len(list_options) + 2 , column=0, padx=30, pady=(15, 15))
+            return parameter
         except Exception as e:
             logging.exception(e)
             #self.on_closing_top(master, window)
@@ -1072,6 +1079,282 @@ class Interface(customtkinter.CTk):
         resp = dialog.get_input()
         print("Resposta:", resp)
         return resp
+    def show_img(self,master:object= None,folder_img:str='',img:str='',labels_button:list=[],functions_buttons:list=[],withl:int=500,hightl:int=500,text:str=''):
+        try:
+            def exec_function(function,parameter,master,window):
+                function(parameter)
+                self.on_closing_top(master, window)
+
+            if master == None:
+                master = customtkinter.CTk()
+            window = customtkinter.CTkToplevel(master)
+            window.geometry("+0+0")
+            window.title("informe!")
+            window.attributes("-topmost", True)
+
+            image_path = f'{str(Path.cwd())}\{folder_img}'
+            image_path = os.path.abspath(image_path)
+            # print(image_path)
+            image = customtkinter.CTkImage(Image.open(os.path.join(image_path, f"{img}")), size=(withl, hightl))
+            if len(text)>0:
+                label = customtkinter.CTkLabel(window, text=text,font=customtkinter.CTkFont(size=30, weight="bold"))
+                label.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+
+            label = customtkinter.CTkLabel(window, text='', image=image, compound="center")
+            label.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
+
+            button = customtkinter.CTkButton(window, text=labels_button[0],
+                                             command=partial(exec_function,functions_buttons[0],0,master,window),
+                                             width=200)
+            button.grid(row=2, column=0, padx=10, pady=10)
+
+            button = customtkinter.CTkButton(window, text=labels_button[1],
+                                             command=partial(exec_function,functions_buttons[1],1,master,window),
+                                             width=200)
+            button.grid(row=3, column=0, padx=10, pady=10)
+
+            #window.grid_rowconfigure(1, weight=1)
+            window.grid_columnconfigure(0, weight=1)
+            if master == self:
+                self.loop_top(window, window)
+            else:
+                self.loop_top(master, window)
+
+        except Exception as e:
+            #print(e)
+            self.on_closing_top(master, window)
+            self.show_img(master=self,folder_img=folder_img, img=img,labels_button=labels_button,functions_buttons=functions_buttons,text=text)
+
+
+    def select_combo_box(self,master:object= None,text:str='',function:object=None):
+        try:
+            def exec_function(function,parameter,master,window):
+
+                #function(parameter)
+                self.on_closing_top(master, window)
+
+            if master == None:
+                master = customtkinter.CTk()
+            window = customtkinter.CTkToplevel(master)
+            window.geometry("+0+0")
+            window.title("informe!")
+            window.attributes("-topmost", True)
+
+            image = copy.copy(self.info_image)
+
+            label = customtkinter.CTkLabel(window, text=text, image=image, compound="center",font=customtkinter.CTkFont(size=30, weight="bold"))
+            label.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
+
+            combobox_1 = customtkinter.CTkComboBox(window,
+                                                        values=["Value 1", "Value 2", "Value Long....."])
+            combobox_1.grid(row=1, column=0, padx=20, pady=(10, 10))
+
+            button = customtkinter.CTkButton(window, text='Avançar',
+                                             command=partial(exec_function,function,master,window),
+                                             width=200)
+            button.grid(row=3, column=0, padx=10, pady=10)
+
+            window.grid_columnconfigure(0, weight=1)
+            if master == self:
+                self.loop_top(window, window)
+            else:
+                self.loop_top(master, window)
+
+        except Exception as e:
+            #print(e)
+            self.on_closing_top(master, window)
+            self.input_long_text(master=self,text=text)
+
+    def input_long_text(self,master:object= None,text:str='',function:object=None):
+        try:
+            def exec_function(textbox,master,window):
+                global lista_values
+                valor = textbox.get("1.0", "end-1c")
+                print(valor)
+                lista_values = valor.split('\n')
+
+                print(lista_values)
+                self.on_closing_top(window, window)
+
+            if master == None:
+                master = customtkinter.CTk()
+            window = customtkinter.CTkToplevel(master)
+            window.geometry("+300+300")
+            window.title("informe!")
+            window.attributes("-topmost", True)
+
+            image = copy.copy(self.info_image)
+
+            label = customtkinter.CTkLabel(window, text=text, image=image, compound="left",font=customtkinter.CTkFont(size=30, weight="bold"))
+            label.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+
+            frame = customtkinter.CTkFrame(window)
+            frame.grid(row=1, column=0, sticky="nsew")
+
+            textbox = customtkinter.CTkTextbox(frame, width=200)
+            textbox.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+
+            button = customtkinter.CTkButton(window, text='Avançar',
+                                             command=partial(exec_function,textbox,master,window),
+                                             width=200)
+            button.grid(row=2, column=0, padx=10, pady=10)
+
+            frame.grid_columnconfigure(0, weight=1)
+            if master == self:
+                self.loop_top(window, window)
+            else:
+                self.loop_top(master, window)
+
+        except Exception as e:
+            #print(e)
+            self.on_closing_top(master, window)
+            self.input_long_text(master=self,text=text)
+        return lista_values
+
+    def picker_agenda(self,offset_row:int=1):
+        from ClasseReferencias import Referencias
+        cd = Referencias(gui=self)
+
+        frame2 = customtkinter.CTkFrame(self.home_frame)
+        frame2.grid(row=offset_row, padx=10, pady=10, sticky='nsew')
+
+
+        hour_string = customtkinter.StringVar(frame2)
+        min_string = customtkinter.StringVar(frame2)
+        seconds = customtkinter.StringVar(frame2)
+
+
+
+        last_value_sec = ""
+        last_value = ""
+        f = ('Times', 20)
+
+        def display_msg():
+            try:
+                date = cal.get_date()
+                m = min_sb.get()
+                h = sec_hour.get()
+                s = sec.get()
+                if len(m)<2:
+                    m = '0'+str(m)
+                if len(h)<2:
+                    h = '0'+str(h)
+                if len(s)<2:
+                    s = '0'+str(s)
+                horario = f'{date} {m}:{h}:{s}'
+                horario = parse(horario)
+                print(horario)
+                t = f"Your appointment is booked for {horario}"
+                msg_display.configure(text=t)
+                arquivos = cd.pegar_arquivos_na_pasta('horarios')
+                cd.criar_arquivo_json(['horario'], [str(horario)], f'horario {len(arquivos)}', 'horarios')
+            except Exception as e:
+                print(e)
+                self.warning(str(e))
+
+        if last_value == "59" and min_string.get() == "0":
+            hour_string.set(int(hour_string.get()) + 1 if hour_string.get() != "23" else 0)
+            last_value = min_string.get()
+
+        if last_value_sec == "59" and sec_hour.get() == "0":
+            min_string.set(int(min_string.get()) + 1 if min_string.get() != "59" else 0)
+
+        if last_value == "59":
+            hour_string.set(int(hour_string.get()) + 1 if hour_string.get() != "23" else 0)
+            last_value_sec = seconds.get()
+
+        cal = Calendar(
+            frame2,
+            selectmode="day",
+            year=datetime.today().year,
+            month=datetime.today().month,
+            day=datetime.today().day
+        )
+        cal.grid(row=offset_row, column=0, padx=10, pady=10, sticky='nsew')
+
+        lista_horas = list(map(lambda x:str(x),list(range(0,24))))
+        lista_min = list(map(lambda x:str(x),list(range(0,60))))
+        lista_s = list(map(lambda x:str(x),list(range(0,60))))
+
+        hour_string.set(str(datetime.today().hour))
+        min_string.set(str(datetime.today().minute))
+        seconds.set(str(datetime.today().second))
+
+        spin = customtkinter.CTkFrame(frame2)
+        spin.grid(row=offset_row + 1, padx=10, pady=10, sticky='nsew')
+
+        min_sb = Spinbox(
+            spin,
+            # from_=0,
+            # to=23,
+            #wrap=True,
+            textvariable=hour_string,
+            width=8,
+            #state="readonly",
+            font=f,
+            justify='center',
+            values= lista_horas
+        )
+        sec_hour = Spinbox(
+            spin,
+            # from_=0,
+            # to=59,
+            #wrap=True,
+            textvariable=min_string,
+            font=f,
+            width=8,
+            justify='center',
+            values=lista_min
+        )
+
+        sec = Spinbox(
+            spin,
+            # from_=0,
+            # to=59,
+            #wrap=True,
+            textvariable=seconds,
+            width=8,
+            font=f,
+            justify='center',
+            values=lista_s
+        )
+
+        min_sb.grid(row=0, column=0, padx=15, pady=15,sticky='nsew')
+        sec_hour.grid(row=0, column=1, padx=15, pady=15,sticky='nsew')
+        sec.grid(row=0, column=2, padx=15, pady=15,sticky='nsew')
+
+        msg = customtkinter.CTkLabel(
+            frame2,
+            text="Hour  Minute  Seconds",
+            font=("Times", 12),
+        )
+        msg.grid(row=offset_row+2,padx=10, pady=10, sticky='nsew')
+
+        actionBtn = customtkinter.CTkButton(
+            frame2,
+            text="Book Appointment",
+            command=display_msg
+        )
+        actionBtn.grid(row=offset_row+3,padx=10, pady=10, sticky='nsew')
+
+        msg_display = customtkinter.CTkLabel(
+            frame2,
+            text="",
+        )
+        msg_display.grid(row=offset_row+4,padx=10, pady=10, sticky='nsew')
+
+        hour_string.set(datetime.now().hour)
+        min_string.set(datetime.now().minute)
+        seconds.set(datetime.now().second)
+
+
+
+
+        # frame2.update()
+        # frame2.rowconfigure(2, weight=1)
+        frame2.columnconfigure(0, weight=1)
+        #spin.columnconfigure(2, weight=2)
+        # spin.rowconfigure(0, weight=1)
 
 if __name__ == "__main__":
     def func(*args):
